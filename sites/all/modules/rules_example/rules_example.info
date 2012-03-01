@@ -1,0 +1,5 @@
+name = Rules examples
+description = Coding examples for the Rules nodule.
+package = Example modules
+core = 7.x
+version = 7.x-1.0

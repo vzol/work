@@ -1,0 +1,6 @@
+name = "hdMod"
+description = Simple module for test hook_menu
+core = 7.x
+version = 7.x-1.0
+files[] = hdmod.module
+package = Other

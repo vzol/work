@@ -1,0 +1,204 @@
+<?php
+
+//
+// Implements hook_menu().
+//
+
+function hdmod_menu() {
+  $items = array(); 
+  
+  $items['table'] = array(
+    'title' => 'Table',
+    'access callback' => TRUE,
+    'page callback' => 'my_table',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['testhook'] = array(
+    
+    'title' => 'testhook',
+    'access callback' => TRUE,    
+    'description' => t('testhook description'),
+    'access arguments'  => 'access content',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('hdmod_vzol_form'),
+);
+  return $items;
+}
+
+
+// Testing hook
+function my_table($arg = 'Hello') {
+    return t('@arg! I\'m your first page!',
+            array('@arg' => $arg));
+}
+
+
+function hdmod_vzol_form($form, &$form_state) { 
+  $form = array();
+  
+  $form['from'] = array(
+    '#type' => 'item',
+    '#title' => t('Simple text'),
+    '#markup' => t('From simple module'),
+  );
+  
+  $form['firstname'] = array(
+    '#type'          => 'textfield',    
+    '#title'         => 'Username',     
+    '#required'      => TRUE,
+    '#default_value' => "First name", // added default value. 
+    '#description'   => "Please enter your first name.", // added description 
+    '#size' => 20, // added 
+    '#maxlength' => 20, // added
+    '#weight' => 1,
+  );
+  
+  $form['lastname'] = array(
+    '#type' => 'textfield',    
+    '#title' => 'Lastname',     
+    '#required' => FALSE,
+    '#default_value' => "Last name", // added default value. 
+    '#description' => "Please enter your last name.", // added description 
+    '#size' => 20, // added 
+    '#maxlength' => 20, // added
+    '#weight' => 2,
+  );
+
+  $form['nickname'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Nick'),
+    '#required' => TRUE,
+    '#default_value' => "Nick name", // added default value. 
+    '#description' => "Please enter your nick.", // added description 
+    '#size' => 20, // added 
+    '#maxlength' => 20, // added
+    '#weight' => 3,
+    
+  );
+  
+  $form['email'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Email'),
+    '#required' => TRUE,
+    '#default_value' => "sample@mail.com", // added default value. 
+    '#description' => "Please enter your email.", // added description 
+    '#size' => 20, // added 
+    '#maxlength' => 20, // added
+    '#weight' => 4,
+    
+  );
+  $form['phone'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Phone'),
+    '#required' => FALSE,
+     '#default_value' => "0123456789", // added default value. 
+    '#description' => "Please enter your phone number, 10 or 12 digits.", // added description 
+    '#size' => 20, // added 
+    '#maxlength' => 20, // added
+    '#weight' => 5,
+    
+  );
+  
+  $form['you_radio'] = array(
+  '#title' => t('Select who are you'),
+  '#type' => 'radios',
+  '#default_value' => 0,
+  '#options' => array('Male', 'Female'),
+  '#required' => TRUE,
+  '#weight' => 6,
+  );
+ 
+  $form['selectbox'] = array(
+    '#type' => 'select', 
+    '#title' => t('Country'), 
+    '#default_value' => 1,
+    '#required' => TRUE,
+    '#options' => array(
+      1 => 'Ukraine', 
+      2 => 'Russia', 
+      3 => 'USA',
+    ), 
+    '#description' => t('Choose you country.'),
+    '#weight' => 8,
+  );
+  
+  $form['description'] = array(
+  '#type' => 'textarea',
+  '#title' => t('Description'),
+  '#default_value' => ' ',
+  '#cols' => 20,
+  '#rows' => 5,
+  '#weight' => 9,
+  );
+   $form['terms'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('I agree with terms.'),
+    '#weight' => 18,
+  );
+   
+  $form['name'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Name'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+    '#weight' => 19,
+  );
+
+  $form['name']['first'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('First name'), 
+    '#required' => FALSE, 
+    '#default_value' => "First name", // added default value. 
+    '#description' => "Please enter your first name.", // added description 
+    '#size' => 20, // added 
+    '#maxlength' => 20, // added
+  );
+  
+  $form['name']['last'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Last name'), 
+    '#required' => FALSE,
+  );
+  
+  $form['submit'] = array(
+	'#type' => 'submit',
+	'#value' => 'Submit',
+    '#weight' => 20   
+  );
+  $form['#submit'][] = 'hdmod_vzol_form_submit_handler';
+  return $form;
+}
+ /**
+ * Parse form
+ */ 
+ function hdmod_vzol_form_submit($form, &$form_values){
+ //Submit contacts data.
+
+   drupal_set_message(t('The form has been submitted. name="@model @make"',
+   array('@model' => $form_values['values']['lastname'], '@make' => $form_values['values']['firstname'])));
+
+}
+ 
+ function hdmod_vzol_form_validate($form, &$form_state) {
+ // check phone. 
+  $phone = $form_state['values']['phone'];
+  if (isset($phone) AND intval($phone)){
+     if (preg_match("/^\d{10}$|^\d{12}$/", $phone) == 0) {
+       form_set_error('phone_number', t('Phone number must be 10 or 12 digits.'));
+     }
+  }
+  // Check email.
+ $email = $form_state['values']['email'];
+ if (isset($email)) {      
+    if (!preg_match("/[0-9a-z_]+@[0-9a-z_^\.]+\.[a-z]{2,3}/i", $email)) {
+      form_set_error('email_adress', t('Enter correct email.'));
+      }
+ }
+}
+
+  function hdmod_vzol_form_submit_handler($form, &$form_state){
+    $firstname = $form_state['values']['firstname'];
+   //redirect to this path
+   $form_state['redirect'] = 'table/'. $firstname;
+   }

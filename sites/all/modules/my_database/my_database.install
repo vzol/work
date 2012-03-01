@@ -1,0 +1,67 @@
+<?php
+//function my_database_intro() {
+//  $markup = t('The example module provides a create tables');
+//  return array('#markup' => $markup);
+//}
+
+/**
+ * Implements hook_schema.
+ */ 
+function my_database_schema() {
+  $schema['custom_table'] = array(
+    // example (partial) specification for table.
+    'description' => 'The base table for my_database.', 
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a my_database.', 
+        'type' => 'serial', 
+        'unsigned' => TRUE, 
+        'not null' => TRUE,
+      ), 
+      'number' => array(
+        'description' => 'The ', 
+        'type' => 'int',
+        'length' => 10,
+        'unsigned' => TRUE, 
+        
+      ), 
+      'teaser' => array(
+        'description' => 'The {node_type} of this node.', 
+        'type' => 'varchar', 
+        'length' => 150, 
+        
+      ), 
+      'text' => array(
+        'description' => 'The title of this node, always treated as non-markup plain text.', 
+        'type' => 'text',        
+      ),
+    ),     
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
+/**
+ * Implements hook_install(). 
+ */
+function my_database_install() {
+  // Adding data into our table.
+  db_insert('custom_table')
+    ->fields(array(
+    'id' => 1, 
+    'number' => 5, 
+    'teaser' => 'all', 
+    'text' => 'Hello',   
+  ))
+    ->execute();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function my_database_uninstall() {
+  // Remove our variable.
+  
+    variable_del('custom_table');
+  
+}
+?>
