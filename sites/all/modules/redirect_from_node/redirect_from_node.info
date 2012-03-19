@@ -1,0 +1,4 @@
+name = "redirect from node module"
+description = "This module will redirect when view node"
+core = 7.x
+files[] = redirect_from_node.module

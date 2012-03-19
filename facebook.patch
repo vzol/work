@@ -1,0 +1,12 @@
+diff --git a/fbconnect.module b/fbconnect.module
+index a1fa5fa..3d07297 100644
+--- a/fbconnect.module
++++ b/fbconnect.module
+@@ -285,6 +285,7 @@ function fbconnect_add_user_afterlogin_submit($form, &$form_state) {
+     $data = fbconnect_get_user_info(array('name', 'email'));
+     //user not logged into facebook we dont have any information for them, let them log in again
+     if (empty($data)) {
++        module_load_include('inc', 'fbconnect', 'fbconnect.pages');
+         return facebook_login_page($form, $form_state);
+     }
+     $uid = _email_allready_exist($data['email']);

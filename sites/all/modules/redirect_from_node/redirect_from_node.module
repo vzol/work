@@ -1,0 +1,20 @@
+<?php
+/**
+ * Implementation of hook_menu_alter().
+ */
+function redirect_from_node_menu_alter(&$items) {
+  $items['node']['page callback'] = '_internal_custom_function_name_here_redirect_to_frontpage';
+}
+
+/**
+ * Redirect back to the frontpage for specific pages.
+ */
+function _internal_custom_function_name_here_redirect_to_frontpage() {
+  // Check GET parameter? if it == node or node/ then redirect
+  if (preg_match('|^node/?$|', $_GET['q'])) { 
+    drupal_goto('home');
+    //$form_state['redirect'] = 'home';
+  }
+  
+}
+?>

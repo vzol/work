@@ -37,8 +37,15 @@
         'type' => 'text',
         'label' => t('The view to use to load the number of result'),
         'options list' => 'rules_example_views_list',
+        'restriction' => 'input',
         ), 
-    ),
+      ),
+    'provides' => array(
+      'number_of_result' => array(
+       'type' => 'integer',
+      'label' => t('Number of view result'),
+      ),      
+     ),
     );
   }
   
@@ -68,7 +75,11 @@
  *
  */  
  function rule_example_action_get_view_results($view_name) {
-    dpm($view_name);
+    $results = views_get_view_result($view_name);
+    
+     return array(
+    'number_of_result' => count($results),
+    ); 
  }
  
  /*
@@ -76,7 +87,13 @@
   *
   */
  function rules_example_views_list() {
-   foreach( views_get_all_views() as $view_name => $view_object );
+  $selectible_views = array();
+   foreach( views_get_all_views() as $view_name => $view_object ){
+    $selectible_views[$view_object->base_table][$view_name] = (isset($view_object -> human_name))
+    ? $view_object -> human_name
+    : $view_name;
+   }
+   return $selectible_views;
  }
  
  ?>

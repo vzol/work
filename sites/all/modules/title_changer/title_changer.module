@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function title_changer_menu() {
+  $items = array();
+
+  $items['title_changer'] = array(
+    'title' => 'Example of Batch process',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('title_changer_form'),
+    'access callback' => TRUE,
+    'file' => 'title_changer.forms.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Return array with node nids
+ */
+function title_changer_load_nids() {
+  $result = db_select('node')
+    ->fields('node', array('nid'))
+    ->orderBy('nid')
+    ->execute();
+
+  $output = array();
+  foreach ($result as $node) {
+    $output[] = $node->nid;
+  }
+  return $output;
+}
