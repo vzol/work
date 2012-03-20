@@ -40,7 +40,7 @@ function fbconnect_stream_publish_node_validate($node, $form) {
  * Implements hook_node_insert().
  */
 function fbconnect_stream_publish_node_insert($node) {
-  if ($_SESSION['fbconnect_feed']['submit'] === TRUE) {
+  if (isset($_SESSION['fbconnect_feed']) && isset($_SESSION['fbconnect_feed']['submit']) && $_SESSION['fbconnect_feed']['submit'] === TRUE) {
     $_SESSION['fbconnect_feed'] = array(
       'type'    => 'node',
       'title'   => $node->title,
@@ -259,3 +259,4 @@ function theme_stream_publish_favicon() {
   $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://';
   return '<img src="' . $protocol . 'facebook.com/images/connect_favicon.png" />';
 }
+

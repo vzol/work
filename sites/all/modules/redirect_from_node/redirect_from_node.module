@@ -17,4 +17,23 @@ function _internal_custom_function_name_here_redirect_to_frontpage() {
   }
   
 }
+
+
+/**
+ * Implements hook_wysiwyg_editor_settings_alter().
+ */
+function redirect_from_node_wysiwyg_editor_settings_alter(&$settings, $context) {
+  
+  if ($context['profile']->editor == 'tinymce') {    
+    $settings['gecko_spellcheck'] = true;
+    $settings['forced_root_block'] = false;
+    $settings['force_br_newlines'] = true;
+    $settings['force_p_newlines'] = false;
+   
+    drupal_set_message(t("Test " ));
+ 
+   
+    // Any init setting taking a string, boolean, number or array/object holding those types can be overridden/forced here.
+  }
+}
 ?>
