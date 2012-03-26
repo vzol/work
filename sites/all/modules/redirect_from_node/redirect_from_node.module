@@ -24,8 +24,8 @@ function redirect_from_node_wysiwyg_editor_settings_alter(&$settings, $context) 
   
   if ($context['profile']->editor == 'tinymce') {    
     $settings['gecko_spellcheck'] = true;
-    $settings['forced_root_block'] = false;
-    $settings['force_br_newlines'] = true;
+   $settings['forced_root_block'] = false;
+   // $settings['force_br_newlines'] = true;
     $settings['force_p_newlines'] = false;
     
   //  $settings['entity_encoding'] = 'named';
@@ -35,4 +35,119 @@ function redirect_from_node_wysiwyg_editor_settings_alter(&$settings, $context) 
     // Any init setting taking a string, boolean, number or array/object holding those types can be overridden/forced here.
   }
 }
+
+/**
+ * Implements of hook_block_info().
+ */
+function redirect_from_node_block_info() {
+  $blocks['main_page_delivery_info'] = array(
+    'info' => t('delivery_info_in_main_page'),
+  );
+  return $blocks;
+}
+
+
+/**
+ * Implements of hook_block_view().
+ */
+function redirect_from_node_block_view($delta = '') {
+ // global $_domain;
+  $block = array();
+  $days = array( '1' => array('morning' => false, 'evening' => false),
+                '2' => array('morning' => false, 'evening' => false),
+                '3' => array('morning' => false, 'evening' => false),
+                '4' => array('morning' => false, 'evening' => false),
+                '5' => array('morning' => false, 'evening' => false),
+                '6' => array('morning' => true, 'evening' => false),
+                '7' => array('morning' => true, 'evening' => false),
+                );
+               
+  switch ($delta) {
+    case 'main_page_delivery_info':
+      $days_for_add = 0;
+      /*
+       1. Знаходимо поточний номер дня тижня
+       2. Отримуємо найближчий день доставки
+       3. ДОдаємо до номера поточного дня кількість днів до доставки
+       4. Отримане число дня тижня в формат timestamp
+       5. Виводим отриману дату.
+       5. якщо час менше 20.00 то +1 день найближчого замовлення
+       6. якщо час більше 20.00 то +2 день найближчого замовлення
+       7. 
+      */
+    // $days = variable_get('lavka_order_days_' . $_domain['domain_id'], NULL);
+    
+     
+     $current_date = date("Y-m-d");// current date
+     $currentTime = (int) date('H'); // current time - hour
+     $delivery_time_to = 20;  // time for compare   
+     $day_number = idate('w');  // current day number      
+     $found_day = '';
+       for ($i = $day_number + 2; $i <= 7; $i++) {
+         if ($days[$i]['morning'] || $days[$i]['evening']) {           
+           if ($i == $day_number + 2) {  // if its current day + 2
+             if ($currentTime < $delivery_time_to) { // and if now not 20.00
+               $found_day = $i + (7 - $day_number);  //
+              // $found_day = $found_day + 1;  // Then we can order product one day later
+               break;               
+             } 
+           } else {
+               $found_day = $i + (7 - $day_number);
+               break;
+           }        
+         }
+       }
+     if ($found_day == '') { 
+      for ($i = 1; $i <= $day_number + 2; $i++) {
+        if ($days[$i]['morning'] || $days[$i]['evening']) {
+          $found_day = $i + (7 - $day_number);          
+          break;
+        }
+       }
+     }
+     ////////
+     /*
+     foreach ($days as $k => $day) {
+       if ($day['morning'] || $day['evening']) {
+         if ($k == $day_number) {
+           continue;
+         } elseif ($k == ($day_number + 1)) {
+             $days_for_add = $k + $adding;
+             break;
+         } else {
+             $days_for_add = $k;
+             break;
+          }       
+       }
+     }
+     ///////
+     
+     */
+    if ($day_number > $days_for_add) {
+      $days_for_add = $days_for_add + (7 - $day_number);
+    } elseif ($day_number < $days_for_add) {
+      $days_for_add = $days_for_add - $day_number;
+    }
+    $day_delivery = add_date($current_date, $found_day); // summ of days untill delivery
+     
+     $timestamp = strtotime($day_delivery);  // timestamp day of delivery
+     $bb = date("l, j  F ", $timestamp);
+          
+      $block['subject'] = t('Delivery status');      
+      $block['content'] = t("Immediate delivery at: ". $bb . ' ' . $found_day .  "<br />" . // пятница, 3 марта
+                            "Orders are accepted until: " .  $days_for_add .' ' . $i );  // 20.00 среды, 29 февраля
+      break;
+  }
+  return $block;
+}
+
+function add_date($given_date, $day = 0, $mth = 0, $yr = 0) {
+  $cd = strtotime($given_date);
+  $new_date = date('Y-m-d h:i:s', mktime(date('h', $cd),
+  date('i', $cd), date('s', $cd), date('m', $cd) + $mth,
+  date('d', $cd) + $day, date('Y', $cd) + $yr));
+  return $new_date;
+}
+
 ?>
+
