@@ -1,0 +1,10 @@
+; the module's user friendly name, will be displayed in the modules list 
+name = Facebook Recent Activity 
+; the module's description, will be displayed in the second column in the modules list  
+description = Retrieves and displays in a block the recent activity data from Facebook.  
+; the module's package, will be the name of the module's group on the modules list page  
+package = VZoL  
+; the Drupal core package  
+core = 7.x  
+; the files array indicating which files are part of the module  
+files[] = facebook.module  

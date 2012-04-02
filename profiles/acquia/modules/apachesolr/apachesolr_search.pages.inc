@@ -8,7 +8,7 @@
 /**
  * Returns search results on user defined search pages.
  */
-function apachesolr_search_custom_page($page_id, $keys = '', $path_replacer = null) {
+function apachesolr_search_custom_page($page_id, $keys = '', $path_replacer = NULL) {
   $search_page = apachesolr_search_page_load($page_id);
   if (empty($search_page)) {
     drupal_set_message(t('This search page cannot be found'), 'error');
@@ -44,12 +44,9 @@ function apachesolr_search_custom_page_search_form($form, &$form_state, $search_
   drupal_add_css(drupal_get_path('module', 'search') . '/search.css');
 
   $form = array();
-
   $form['#id'] = 'search-form';
   $form['#attributes']['class'][] = 'search-form';
-
   $form['#search_page'] = $search_page;
-
   $form['basic'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('container-inline')),
@@ -66,18 +63,15 @@ function apachesolr_search_custom_page_search_form($form, &$form_state, $search_
     '#value' => t('Search'),
   );
 
-  // Set our solr environment for easy retrieval
-  // TODO: this should be generic and not duplicated
-  $apachesolr_has_searched = apachesolr_has_searched();
-  $query = apachesolr_current_query();
+  $apachesolr_has_searched = apachesolr_has_searched($search_page->env_id);
+  $query = apachesolr_current_query($search_page->env_id);
 
   if ($apachesolr_has_searched) {
-    $query = apachesolr_current_query();
+    $query = apachesolr_current_query($search_page->env_id);
     $searcher = $query->getSearcher();
     // We use the presence of filter query params as a flag for the retain filters checkbox.
     $fq = $query->getParam('fq');
   }
-
 
   if ($apachesolr_has_searched && ($response = apachesolr_static_response_cache($searcher))) {
     $form['basic']['get'] = array(
@@ -105,11 +99,9 @@ function apachesolr_search_custom_page_search_form_submit(&$form, &$form_state) 
   if (strlen($form_state['values']['keys'])) {
     $redirect .= '/' . $form_state['values']['keys'];
   }
-
   if (isset($form_state['values']['get'])) {
     $get = json_decode($form_state['values']['get'], TRUE);
   }
-
   if (!empty($form_state['values']['retain-filters'])) {
     // Add our saved value
     $get['retain-filters'] = '1';

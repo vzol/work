@@ -1,0 +1,4 @@
+name = "custom search with apache solr"
+description = "This module show how you can use apache solr for make custom search page"
+core = 7.x
+files[] = customsearch.module

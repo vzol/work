@@ -6,14 +6,16 @@ Drupal.behaviors.facetapi = {
     // links for block realm facets.
     // @todo We need some sort of JS API so we don't have to make decisions
     // based on the realm.
-    for (var index in settings.facetapi.facets) {
-      if (null != settings.facetapi.facets[index].makeCheckboxes) {
-        // Find all checkbox facet links and give them a checkbox.
-        $('#' + settings.facetapi.facets[index].id + ' a.facetapi-checkbox', context).each(Drupal.facetapi.makeCheckbox);
-      }
-      if (null != settings.facetapi.facets[index].limit) {
-        // Applies soft limit to the list.
-        Drupal.facetapi.applyLimit(settings.facetapi.facets[index]);
+    if (settings.facetapi) {
+      for (var index in settings.facetapi.facets) {
+        if (null != settings.facetapi.facets[index].makeCheckboxes) {
+          // Find all checkbox facet links and give them a checkbox.
+          $('#' + settings.facetapi.facets[index].id + ' a.facetapi-checkbox', context).each(Drupal.facetapi.makeCheckbox);
+        }
+        if (null != settings.facetapi.facets[index].limit) {
+          // Applies soft limit to the list.
+          Drupal.facetapi.applyLimit(settings.facetapi.facets[index]);
+        }
       }
     }
   }
@@ -35,7 +37,7 @@ Drupal.facetapi.applyLimit = function(settings) {
     // Ensures our limit is zero-based, hides facets over the limit.
     var limit = settings.limit - 1;
     $('ul#' + settings.id).find('li:gt(' + limit + ')').hide();
-    
+
     // Adds "Show more" / "Show fewer" links as appropriate.
     $('ul#' + settings.id).filter(function() {
       return $(this).find('li').length > settings.limit;
@@ -43,11 +45,11 @@ Drupal.facetapi.applyLimit = function(settings) {
       $('<a href="#" class="facetapi-limit-link"></a>').text(Drupal.t('Show more')).click(function() {
         if ($(this).prev().find('li:hidden').length > 0) {
           $(this).prev().find('li:gt(' + limit + ')').slideDown();
-          $(this).text(Drupal.t('Show fewer'));
+          $(this).addClass('open').text(Drupal.t('Show fewer'));
         }
         else {
           $(this).prev().find('li:gt(' + limit + ')').slideUp();
-          $(this).text(Drupal.t('Show more'));
+          $(this).removeClass('open').text(Drupal.t('Show more'));
         }
         return false;
       }).insertAfter($(this));
@@ -96,7 +98,7 @@ Drupal.facetapi.makeCheckbox = function() {
       $link.before(checkbox).hide();
     }
     else {
-      $link.before(checkbox).before('&nbsp;');
+      $link.before(checkbox);
     }
     $link.removeClass('facetapi-checkbox').addClass('facetapi-checkbox-processed');
   }

@@ -1,0 +1,127 @@
+<?php
+
+/**
+ * @file  This module show how you can use apache solr for make custom search page
+ * 
+ */
+
+/**
+ * Implementation of hook_menu().
+ *
+ */
+
+// This function will controlling site path for custom searching using apachesolr Drupal 7.
+function customsearch_menu() {
+    $items = array();
+    $items['server/%'] = array(
+            'title' => TRUE,
+            'access callback' => TRUE,
+            'page callback' => 'customsearch_customsolr_search',
+            'access arguments' => array('search content'),
+            'type' => MENU_CALLBACK,
+        );
+    
+    return $items;
+}
+
+// Function for grabbing keyword from mysite.com/server/keyword by reading it path.
+function customsearch_get_keys() {
+  static $return;
+  if (!isset($return)) {
+    $parts = explode('/', $_GET['q']);
+    if (count($parts) == 2) {
+      $return = array_pop($parts);
+    }
+    else {
+      $return = empty($_REQUEST['keys']) ? '' : $_REQUEST['keys'];
+    }
+  }
+  return $return;
+}
+
+function customsearch_customsolr_search($keys = null) {
+    $keys = customsearch_get_keys();
+    $filters = isset($conditions['filters']) ? $conditions['filters'] : '';
+    $solrsort = isset($_GET['solrsort']) ? $_GET['solrsort'] : '';
+    $empty_search_behavior = isset($conditions['apachesolr_search_browse']) ? $conditions['apachesolr_search_browse'] : '';
+    $nodeTitle = check_plain($keys);
+    drupal_set_title(ucfirst($nodeTitle)); 
+
+    try {
+        
+//$results = apachesolr_search_search_execute($keys, $filters, $solrsort, $custom_path, $page);
+        // For perfomance reasons, do not run a search if search is empty and
+        // $empty_search_behavior condition is 'browse'
+        if (!$keys && !$filters && $empty_search_behavior == 'browse') {
+            // Pass empty search behavior as string on to customsearch_theme()
+            return array('apachesolr_search_browse' => $empty_search_behavior);
+        } 
+
+        
+// Update from Slava's comments
+        $params = array('q'=> keys, 'fq' => filters);
+        $results = apachesolr_search_run('search', $params, $solrsort, 'weightloss/', pager_find_page()); 
+
+        
+//$results = apachesolr_search_run($keys, $filters, $solrsort, 'weightloss/', pager_find_page());
+        
+        if (!$keys && !$filters && $empty_search_behavior == 'blocks') {
+            // If search was empty and empty search behavior is 'blocks', discard
+            // the result items and pass behavior on to customsearch_theme()
+            $results['apachesolr_search_browse'] = $empty_search_behavior;
+        } 
+
+        return customsearch_search_page($results);
+    }
+    catch (Exception $e) {
+        watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+    }
+}
+
+/**
+ * Implements hook_theme().
+ */
+// Now, theming your custom search page in customsearch modules.
+function customsearch_theme() {
+  return array(
+    'search_results__customsearch' => array(
+      'function' => 'theme_customsearch_results',
+    ));
+} 
+
+/**
+ * Implements hook_search_page().
+ */
+function customsearch_search_page($results) {
+  if (empty($results['apachesolr_search_browse'])) {
+    $output = array(
+      '#theme' => 'search_results',
+      '#results' => $results,
+      '#module' => 'customsearch',
+    );
+  } else {
+    $output = apachesolr_search_page_browse($results['apachesolr_search_browse']);
+  }
+  return $output;
+} 
+
+function theme_customsearch_results($variables) {
+  extract($variables);
+  $output = '';
+  $query = customsearch_get_keys();
+  if ($search_results) {
+    $output .= '<h2>Custom search for '.$query.'</h2>';
+    $output .=<<<EOFM
+<ol class="search-results {$module}-results">
+  {$search_results}
+</ol>
+{$pager}
+EOFM;
+  } else {
+    $output .= "<h2>" . t('Your search yielded no results') . "</h2>";
+    $output .= apachesolr_search_help('apachesolr_search#noresults', drupal_help_arg());
+  } 
+
+  return 
+$output;
+}

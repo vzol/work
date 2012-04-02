@@ -76,6 +76,24 @@ abstract class FacetapiUrlProcessor {
   abstract public function getQueryString(array $facet, array $values, $active);
 
   /**
+   * Returns the path for a facet item.
+   *
+   * @param array $facet
+   *   The facet definition.
+   * @param array $values
+   *   An array containing the item's values being added to or removed from the
+   *   query string dependent on whether or not the item is active.
+   * @param int $active
+   *   An integer flagging whether the item is active or not.
+   *
+   * @return string
+   *   The path of the facet.
+   */
+  public function getFacetPath(array $facet, array $values, $active) {
+    return $this->adapter->getSearchPath();
+  }
+
+  /**
    * Sets the breadcrumb trail on searches.
    */
   abstract public function setBreadcrumb();
@@ -108,6 +126,13 @@ abstract class FacetapiUrlProcessor {
    */
   public function getParams() {
     return $this->params;
+  }
+
+  /**
+   * Removes an item from the $this->params array.
+   */
+  public function removeParam($pos) {
+    unset($this->params[$this->filterKey][$pos]);
   }
 
   /**
