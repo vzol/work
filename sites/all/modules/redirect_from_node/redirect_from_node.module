@@ -2,6 +2,7 @@
 /**
  * Implementation of hook_menu_alter().
  */
+/*
 function redirect_from_node_menu_alter(&$items) {
   $items['node']['page callback'] = '_internal_custom_function_name_here_redirect_to_frontpage';
 }
@@ -9,6 +10,7 @@ function redirect_from_node_menu_alter(&$items) {
 /**
  * Redirect back to the frontpage for specific pages.
  */
+/*
 function _internal_custom_function_name_here_redirect_to_frontpage() {
   // Check GET parameter? if it == node or node/ then redirect
   if (preg_match('|^node/?$|', $_GET['q'])) { 
@@ -23,10 +25,10 @@ function _internal_custom_function_name_here_redirect_to_frontpage() {
 function redirect_from_node_wysiwyg_editor_settings_alter(&$settings, $context) {
   
   if ($context['profile']->editor == 'tinymce') {    
-    $settings['gecko_spellcheck'] = true;
-   $settings['forced_root_block'] = false;
+  //  $settings['gecko_spellcheck'] = true;
+  // $settings['forced_root_block'] = false;
    // $settings['force_br_newlines'] = true;
-    $settings['force_p_newlines'] = false;
+  //  $settings['force_p_newlines'] = false;
     
   //  $settings['entity_encoding'] = 'named';
    // $settings['verify_html'] = false;
@@ -39,6 +41,7 @@ function redirect_from_node_wysiwyg_editor_settings_alter(&$settings, $context) 
 /**
  * Implements of hook_block_info().
  */
+
 function redirect_from_node_block_info() {
   $blocks['main_page_delivery_info'] = array(
     'info' => t('delivery_info_in_main_page'),
@@ -48,16 +51,17 @@ function redirect_from_node_block_info() {
 /**
  * Implements of hook_block_view().
  */
+
 function redirect_from_node_block_view($delta = '') {
  // global $_domain;
   $block = array();
-   switch ($delta) {
-    case 'main_page_delivery_info':
+switch ($delta) {
+  case 'main_page_delivery_info':
     $days = array( '1' => array('morning' => false, 'evening' => false),
                  '2' => array('morning' => false, 'evening' => false),
-                 '3' => array('morning' => false, 'evening' => false),
+                 '3' => array('morning' => true, 'evening' => true),
                  '4' => array('morning' => false, 'evening' => false),
-                 '5' => array('morning' => false, 'evening' => false),
+                 '5' => array('morning' => true, 'evening' => false),
                  '6' => array('morning' => false, 'evening' => true),
                  '7' => array('morning' => false, 'evening' => false),
                 );   
@@ -65,43 +69,44 @@ function redirect_from_node_block_view($delta = '') {
     $day_number       = idate('w');  // current day number
     $current_time     = (int) date('H'); // current time - hour
     $delivery_time_to = 20;  // time for compare
-    $next_day         = ($current_time > $delivery_time_to) ? $day_number + 2 : $day_number + 1;
-  for ($i = $next_day; $i <= 7; $i++) {
-      if ($days[$i]['morning'] || $days[$i]['evening']) {           
-        if ($i == $next_day) {
-          continue;
-        }           
+    
+    $next_day         = ($current_time > $delivery_time_to) ? $day_number + 3 : $day_number + 2;   
+    for ($i = $next_day; $i <= 7; $i++) {
+      if ($days[$i]['morning'] || $days[$i]['evening']) {                
         $found_day = ($i - $day_number);
         break;          
       }
     }       
     if (empty($found_day)) { 
       for ($i = 1; ($i <= $next_day) && ($i <= 7) ; $i++) {
-        if ($days[$i]['morning'] || $days[$i]['evening']) {
-          if (($day_number == 7) && ($i == 1)) {
-            continue;
-          }
-          if ($i == $next_day) {
-            continue;
-          }
-          $found_day = $i + (7 - $day_number);          
+        if ($days[$i]['morning'] || $days[$i]['evening']) {         
+          if ($day_number > $i) {           
+            $found_day = 7 - ($day_number - $i);
+            if ($found_day == 1 || ($found_day == 2 && $current_time > $delivery_time_to)) {
+              $found_day++;              
+            }
+          } else {
+            $found_day = 7 + ( $i - $day_number); 
+          }                  
           break;
         }
       }
     }
-    if (empty($found_day)) {       
+    if (empty($found_day)) { // if nothing was found     
       $found_day = 7;       
     }
-     
-    $day_delivery  = date( "l, j  F ", strtotime("+$found_day day"));      
-    $order_accepted = date( "20.00 l, j  F ", strtotime(" - 2 day", strtotime($day_delivery)));
-   // print("Immediate delivery at: " . $day_delivery . ' ' . "<br />" . // пятница, 3 марта
-   //       "Orders are accepted until: " .  $order_accepted);  // 20.00 среды, 29 февраля
-      $block['subject'] = t('Delivery status');      
-      $block['content'] = t("Immediate delivery at: " . $day_delivery . ' ' . "<br />" . // пятница, 3 марта
-                            "Orders are accepted until: " .  $order_accepted);  // 20.00 среды, 29 февраля
-   
-      break;
+   // $day_delivery  = format_date( ( "l, j  F ", strtotime("+$found_day day"));      
+    $day_delivery  = format_date(strtotime("+$found_day day"), 'custom', 'l, j  F ');
+   // $order_accepted = date( "20.00 l, j  F ", strtotime(" - 2 day", strtotime($day_delivery)));
+     $order_accepted = format_date( strtotime(" - 2 day", strtotime($day_delivery)), 'custom', "20.00 l, j F ");
+   // variable_get('lavka_order_days_' . $default_domain, NULL);
+    $block['subject'] = t('Delivery status');
+    
+   // $block['content'] = t("Immediate delivery at: " . $day_delivery . ' ' . "<br />" . // пятница, 3 марта
+   //                       "Orders are accepted until: " .  $order_accepted);  // 20.00 среды, 29 февраля
+    $block['content'] = t("Immediate delivery at: !date", array('!date' => $day_delivery)) . "<br />";
+      $block['content'] .= t("Orders are accepted until: !order_accept", array('!order_accept' => $order_accepted));
+  break;
 }
   return $block;
 }

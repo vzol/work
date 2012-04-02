@@ -27,7 +27,7 @@ Facebook API key: http://www.facebook.com/developers/
 
 
 -- INSTALLATION --
-  1. Upload the 'fbconnect' and 'libraries' folder into your module directory and activate
+  1. Upload the 'fbconnect' folder into your module directory and activate
      the modules.
 
   2. Upload facebook-php-sdk library (http://github.com/facebook/php-sdk/) into the libraries
@@ -36,7 +36,6 @@ Facebook API key: http://www.facebook.com/developers/
  -- OR --
   Use drush_make script instead of steps 1 and 2:
 
-     projects[] = libraries
      projects[] = fbconnect
      libraries[facebook-php-sdk][download][type] = "get"
      libraries[facebook-php-sdk][download][url] = "http://github.com/facebook/php-sdk/tarball/v3.1.1"

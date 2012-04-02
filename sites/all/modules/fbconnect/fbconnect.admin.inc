@@ -53,6 +53,12 @@ function fbconnect_api_keys_settings($form, &$form_state) {
     '#title' => t('Debug mode'),
     '#default_value' => variable_get('fbconnect_debug', FALSE),
   );
+  $form['fbconnect_ssl'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Always use SSL on authentication'),
+    '#description' => t('Enable this if you want to use SSL on authentication.'),
+    '#default_value' => variable_get('fbconnect_ssl', FALSE),
+  );
 
   $form['fbconnect_connect_url'] = array(
     '#type' => 'textfield',
@@ -61,12 +67,12 @@ function fbconnect_api_keys_settings($form, &$form_state) {
     '#default_value' => variable_get('fbconnect_connect_url', $GLOBALS['base_url'] . '/'),
   );
 
-   $form['fbconnect_noroot'] = array(
-     '#title' => t("Don't include settings in footer"),
-     '#type' => 'checkbox',
-     '#description' => t('Check if other facebook modules are in use so fb-root code is not added twice.'),
-     '#default_value' => variable_get('fbconnect_noroot', '')
-   );
+  $form['fbconnect_noroot'] = array(
+    '#title' => t("Don't include settings in footer"),
+    '#type' => 'checkbox',
+    '#description' => t('Check if other facebook modules are in use so fb-root code is not added twice.'),
+    '#default_value' => variable_get('fbconnect_noroot', '')
+  );
 
   //  locale
   //  connect_logo_url
@@ -115,6 +121,21 @@ function fbconnect_appearance_settings($form, &$form_state) {
     '#title' => t('Disable linking accounts during registration'),
     '#default_value' => variable_get('fbconnect_reg_options', 0),
     '#description' => t('Disables the option to link local account to a FB account on registration'),
+  );
+  $form['site']['fbconnect_user_reg_display'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display FBConnect button on registration form'),
+    '#default_value' => variable_get('fbconnect_user_reg_display', TRUE),
+    '#description' => t('Add the FBConnect button to the "create new account" form. This will only appear if "fast registration mode" is not selected.'),
+  );
+  $form['site']['fbconnect_user_reg_location'] = array(
+    '#type'=> 'select',
+    '#title' => t('Location of FBConnect button on registration form'),
+    '#default_value' => variable_get('fbconnect_user_reg_location', 'top'),
+    '#options' => array(
+      'top' => t('Top'),
+      'bottom' => t('Bottom'),
+    ),
   );
 
   $form['display'] = array(
