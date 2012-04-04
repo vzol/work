@@ -41,4 +41,47 @@ function theme_facebook_add_like_button()
 }(document, \'script\', \'facebook-jssdk\'));</script> <div class="fb-like" data-send="true" data-width="450" data-show-faces="true"></div>';  
   
   return $output;  
+}
+
+/** 
+ * Implements hook_block_info(). 
+ * 
+ * Using this hook we declare to Drupal that our module 
+ * provides one block identified as facebook 
+ */  
+function facebook_block_info()  
+{  
+  $blocks['facebook'] = array(  
+    'info' => t('Facebook Recent Activity'),  
+  // leave the other properties of the block default  
+  );  
+  
+  return $blocks;  
+}
+
+
+/** 
+ * Implements hook_block_view(). 
+ * 
+ * Returns the renderable view of our block. It takes 
+ * the configured values of facebook recent activity 
+ * social plugin 
+ */  
+function facebook_block_view($delta = '')  
+{  
+  switch($delta) {  
+  case 'facebook' :  
+    $block['subject'] = t('Facebook recent activity');  
+    $block['content'] = '<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/ru_RU/all.js#xfbml=1&appId=327196347340380";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, \'script\', \'facebook-jssdk\'));</script>
+<div class="fb-activity" data-site="habrahabr.ru" data-width="170" data-height="300" data-header="false" data-recommendations="false"></div>';  
+  }  
+  
+  return $block;  
 }  
