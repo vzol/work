@@ -1,0 +1,7 @@
+;$Id$
+name = ctools multistep
+description = "A multi steps form with Ctools"
+core = 7.x
+; the module's package, will be the name of the module's group on the modules list page  
+package = VZoL  
+dependencies[] = ctools

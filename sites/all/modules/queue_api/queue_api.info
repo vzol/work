@@ -1,0 +1,6 @@
+;$Id$
+name = queue api test
+description = "Module for test queue API, Its work with email"
+core = 7.x
+; the module's package, will be the name of the module's group on the modules list page  
+package = VZoL  

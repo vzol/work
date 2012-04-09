@@ -1,0 +1,179 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Ctools hooks for a multi step form
+ */
+
+/**
+ * Implementation of hook_menu()
+ */
+function ctools_multistep_menu() {
+  $items = array();
+  
+  $items['poll/%ctools_js/d7'] = array(
+    'title' => ('Answer its'),
+    'page callback' => 'multistep_poll',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $items;
+}
+
+/**
+ * Page callback for poll/%ctools_js/d7
+ */
+function multistep_poll($js = NULL, $step = NULL) {
+  
+  $form_info = array(
+    'id' => 'd7-poll-form', //form id
+    'path' => "poll/" . ($js ? 'ajax' : 'nojs') . "/d7/%step", //pass the step we're on to the form, step1, step2, ..etc
+    'show trail' => TRUE, //show the breadcrumb / path trail for the forms
+    'show back' => TRUE, //show the back button
+    'show cancel' => TRUE, //show the cancel button
+    'show return' => FALSE, //show the update and return button
+    'next callback' =>  'd7_poll_wizard_next', //a callback function to run when the next button is called
+    'finish callback' => 'd7_poll_wizard_finish', //callback when finish button is called
+    'cancel callback' => 'd7_poll_wizard_cancel', //callback when cancel button is called
+    'order' => array( // this controls order, as well as form labels
+      'step1' => t('Step 1'),
+      'step2' => t('Step 2'),
+    ),
+    'forms' => array( // here we map a step to a form id.
+      'step1' => array( //what we're doing here is telling the wizard when step1 is passed as arg, show the form with form_id d7_poll_step_1
+        'form id' => 'd7_poll_step_1'
+      ),
+      'step2' => array(
+        'form id' => 'd7_poll_step_2'
+      ),
+    ),
+  );
+
+
+  /***********************************************
+   * Object caching
+   ***********************************************/
+   $object_id = 'd7_poll';
+   if (empty($step)) {
+      d7_cache_clear($object_id);
+   }
+
+  $object = d7_cache_get($object_id);
+  $form_state = array(
+    'ajax' => $js,
+    'object_id' => $object_id,
+    'object' => &$object,
+  );
+
+
+  // Send this all off to our form. This is like drupal_get_form only wizardy.
+  ctools_include('wizard');
+  $form = ctools_wizard_multistep_form($form_info, $step, $form_state);
+  $output = drupal_render($form);  
+  return $output;
+}
+
+function d7_poll_step_1($form, &$form_state) {
+  
+  $name = isset($form_state['object']['name']) ? $form_state['object']['name'] : '';
+  $choices = isset($form_state['object']['choices']) ? $form_state['object']['choices'] : '';
+
+  $form_state['title'] = t('What is awesome in Drupal 7?');
+  
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('What\'s your name?'),
+    '#required' => TRUE,
+    '#default_value' => $name,
+  );
+  
+  $form['choices'] = array(
+    '#type' => 'radios',
+    '#title' => t('What is your favourite new Drupal 7 feature?'),
+    '#options' => d7_poll_options(),
+    '#default_value' => $choices,
+    '#required' => TRUE,
+  );
+  
+  return $form;
+}
+
+function d7_poll_options() {
+  return array(
+    'overlay' => 'The new Admin overlay, toolbar and contextual links',
+    'um' => 'The integrated Update Manager',
+    'files' => 'Being able to have both public and private files',
+    'field' => 'Field API (CCK in core)',
+    'image' => 'Image Styles (ImageCache in core)',
+  );
+}
+
+function d7_poll_step_2($form, &$form_state) {
+  
+  $name = $form_state['object']['name'];
+  $options = d7_poll_options();
+  $choice = $options[$form_state['object']['choices']];
+  
+  $form['message'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Hey @name, tell us why you chose @choice', array(
+      '@name' => $name,
+      '@choice' => $choice,
+    )),
+  );
+  
+  return $form;
+}
+
+/**
+ * Cache helpers
+ */
+function d7_cache_set($id, $object) {
+  ctools_include('object-cache');
+  ctools_object_cache_set('d7', $id, $object);
+}
+
+/**
+ * Get the current object from the cache, or default.
+ */
+function d7_cache_get($id) {
+  ctools_include('object-cache');
+  return ctools_object_cache_get('d7', $id);
+}
+
+/**
+ * Clear the wizard cache.
+ */
+function d7_cache_clear($id) {
+  ctools_include('object-cache');
+  ctools_object_cache_clear('d7', $id);
+}
+
+function d7_poll_wizard_next(&$form_state) {
+  // get the old object from the cache
+  $old = ctools_object_cache_get('d7', $form_state['object_id']);
+
+  // check to make sure its not null
+  $old = isset($old) ? $old : array();
+  
+  // blend the arrays, making sure new values will trump old values
+  // and attach to the $form_state
+  $form_state['object'] = $form_state['values']+$old;
+
+  // store the new object back in the cache
+  ctools_object_cache_set($form_state['object_id'], $form_state['object']);
+}
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function queue_api_cron_queue_info() {
+  $queue['mymodule_queue'] = array(
+    'worker callback' => 'mymodule_item_process',
+    'time' => 60,
+  );
+  return $queue;
+}
+
+
+/**
+ * Implements hook_cron().
+ */
+function queue_api_cron() {
+ 
+  // Загружаем массив, каждый элемент которого 
+  // будет являться элементом очереди
+  $items = mymodule_load_data();
+ 
+  if ($items) {
+    // Создаём новую очередь
+    $queue = drupalQueue::get('mymodule_queue');   
+    $queue->createQueue();
+ 
+    // Каждый элемент ставим в очередь, т.е.
+    // по факту - идёт запись в базу данных
+    foreach ($items as $item) {
+      $queue->createItem($item);
+    }
+  }
+}
+
+function mymodule_load_data() {
+  // Сюда я буду ложить все данные
+  $data = array();
+  // Вытягиваю из бд имя и емейл каждого пользователя
+  $users = db_query('SELECT name, mail FROM {users}');
+  // Ложу всех 
+  foreach ($users as $user) {
+    $data[] = array(
+      'mail' => $user->mail,
+      'name' => $user->name,
+    ); 
+  }
+  return $data;
+}
+
+
+function mymodule_item_process($data) {
+  // Строю параметры отправки письма
+  $site_name = variable_get('site_name', '');
+  $params = array();
+  $params['subject'] = t('Notification from !sitename', array('!sitename' => $site_name));
+  $params['body'] = t('Hi, !username', array('!username' => $data['name']));
+  // Отправляю письмо
+  drupal_mail('mymodule', 'send_notifications', $data['mail'], language_default(), $params);
+}
